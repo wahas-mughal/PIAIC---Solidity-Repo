@@ -1,2 +1,2 @@
-# PIAIC---Solidity-Repo
+# PIAIC - Solidity
 Solidity Smart Contracts
