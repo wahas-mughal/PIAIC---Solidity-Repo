@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract Address{
+contract stdEnrollment{
 
 
 address payable private ContractAddress;
