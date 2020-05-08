@@ -1,154 +1,126 @@
 pragma solidity ^0.6.0;
-//0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c
+
+
 import "./IERC20.sol";
 import "./SafeMath.sol";
-// SafeMath library will allow to use arthemtic operation on Uint256
-contract PIAICBCCToken is IERC20{
-    //Extending Uint256 with SafeMath Library.
-    using SafeMath for uint256;
+
+
+contract TimeBoundToken is IERC20 {
+
+using SafeMath for uint256;
+
+mapping (address => uint256) private _balanceOf;
+
+mapping (address => mapping (address => uint256)) private allowances;
+
+uint private _totalSupply;
+address public owner;
+string public name;
+string public symbol;
+uint8 public decimals;
+
+address wagerx = 0x2246D1Dc399f138B474BC9958d7fCC9d9c5c5F90;
+address wagery = 0x24e345EDb508073F1349e192E5b2a9C2cc2D71Df;
+address wagerz = 0x921808db8C4854EC9C645b7463f09777EAa2E9CE;
+
+
+constructor () public {
     
-    //mapping to hold balances against EOA accounts
-    mapping (address => uint256) private _balances;
-
-    //mapping to hold approved allowance of token to certain address
-    //       Owner               Spender    allowance
-    mapping (address => mapping (address => uint256)) private _allowances;
-
-    //the amount of tokens in existence
-    uint256 private _totalSupply;
-
-    //owner
-    address public owner;
+    name = "TimeBoundToken";
+    symbol = "^";
+    decimals = 18;
+    owner = msg.sender;
     
-    string public name;
-    string public symbol;
-    uint8 public decimals;
-    uint256 private cap = 10000020000 ;
+    _totalSupply = 1000000 * (10 ** (uint256(decimals)));
+    _balanceOf[owner] = _totalSupply;
     
-   
+    emit Transfer(address(this), owner, _totalSupply);
+    
+    
+}
 
-    constructor () public {
-        name = "PIAIC-BCC Batch-1 Token";
-        symbol = "BCC1";
-        decimals = 4;
-        owner = msg.sender;
-        
-        //1 million tokens to be generated
-        //1 * (10**18)  = 1;
-        
-        _totalSupply = 1000000 * (10 ** uint256(decimals));
-        
-        //transfer total supply to owner
-        _balances[owner] = _totalSupply;
-        
-        //fire an event on transfer of tokens
-        emit Transfer(address(this),owner,_totalSupply);
-     }
-     
-     
-    /**
-     * @dev See {IERC20-totalSupply}.
-     */
-    function totalSupply() public view override returns (uint256) {
+  function totalSupply() public view override returns (uint256) {
         return _totalSupply;
     }
 
-    /**
-     * @dev See {IERC20-balanceOf}.
-     */
-    function balanceOf(address account) public view override returns (uint256) {
-        return _balances[account];
+   
+  function balanceOf(address account) public view override returns (uint256) {
+        return _balanceOf[account];
     }
+    
+    
 
-    /**
-     * @dev See {IERC20-transfer}.
-     *
-     * Requirements:
-     *
-     * - `recipient` cannot be the zero address.
-     * - the caller must have a balance of at least `amount`.
-     */
-    function transfer(address recipient, uint256 amount) public virtual  override returns (bool) {
+   function transfer(address recipient, uint256 amount) public virtual  override returns (bool) {
+       
         address sender = msg.sender;
         require(sender != address(0), "BCC1: transfer from the zero address");
         require(recipient != address(0), "BCC1: transfer to the zero address");
-        require(_balances[sender] > amount,"BCC1: transfer amount exceeds balance");
-        require(now > 1591642800);
-
-        //decrease the balance of token sender account
-        _balances[sender] = _balances[sender].sub(amount);
+        require(_balanceOf[sender] > amount,"BCC1: transfer amount exceeds balance");
         
-        //increase the balance of token recipient account
-        _balances[recipient] = _balances[recipient].add(amount);
+        // timestamp to lock the transaction until June 8, 2020 12 PM
+        
+        if(recipient == wagerx || recipient == wagery || recipient == wagerz){
+        require (now > 1591642800, "Your month is not completed yet");    //1591642800
+        }
+        
+        else{
+        _balanceOf[sender] = _balanceOf[sender].sub(amount);
+        _balanceOf[recipient] = _balanceOf[recipient].add(amount);
 
         emit Transfer(sender, recipient, amount);
         return true;
+        }
+        
+       
     }
+    
+    
 
-    /**
-     * @dev See {IERC20-allowance}.
-     */
     function allowance(address tokenOwner, address spender) public view virtual  override returns (uint256) {
-        return _allowances[tokenOwner][spender];
+        return allowances[tokenOwner][spender];
     }
-
-    /**
-     * @dev See {IERC20-approve}.
-     * msg.sender: TokenOwner;
-     * Requirements:
-     *
-     * - `spender` cannot be the zero address.
-     */
+    
+    
+    
     function approve(address spender, uint256 amount) public virtual override  returns (bool) {
         address tokenOwner = msg.sender;
         require(tokenOwner != address(0), "BCC1: approve from the zero address");
         require(spender != address(0), "BCC1: approve to the zero address");
         
-        _allowances[tokenOwner][spender] = amount;
+        allowances[tokenOwner][spender] = amount;
         
         emit Approval(tokenOwner, spender, amount);
         return true;
     }
-
-    /**
-     * @dev See {IERC20-transferFrom}.
-     *
-     * Emits an {Approval} event indicating the updated allowance. This is not
-     * required by the EIP. See the note at the beginning of {ERC20};
-     * msg.sender: Spender
-     * Requirements:
-     * - `sender` and `recipient` cannot be the zero address.
-     * - `sender` must have a balance of at least `amount`.
-     * - the caller must have allowance for ``sender``'s tokens of at least
-     * `amount`.
-     */
-    function transferFrom(address tokenOwner, address recipient, uint256 amount) public  virtual override returns (bool) {
+    
+    
+    
+      function transferFrom(address tokenOwner, address recipient, uint256 amount) public  virtual override returns (bool) {
+       
         address spender = msg.sender;
-        uint256 _allowance = _allowances[tokenOwner][spender];
+        uint256 _allowance = allowances[tokenOwner][spender];
         require(_allowance > amount, "BCC1: transfer amount exceeds allowance");
-        require(now > 1591642800); //1591642800
         
-        //deducting allowance
+         // timestamp to lock the transaction until June 8, 2020 12 PM
+        
+        if(recipient == wagerx || recipient == wagery || recipient == wagerz){
+        require (now > 1591642800, "Your month is not completed yet");    //1591642800
+        }
+        
+        else{
         _allowance = _allowance.sub(amount);
-        
-        //--- start transfer execution -- 
-        
-        //owner decrease balance
-        _balances[tokenOwner] =_balances[tokenOwner].sub(amount); 
-        
-        //transfer token to recipient;
-        _balances[recipient] = _balances[recipient].add(amount);
+        _balanceOf[tokenOwner] =_balanceOf[tokenOwner].sub(amount); 
+        _balanceOf[recipient] = _balanceOf[recipient].add(amount);
         
         emit Transfer(tokenOwner, recipient, amount);
-        //-- end transfer execution--
-        
-        //decrease the approval amount;
-        _allowances[tokenOwner][spender] = _allowance;
+
+        allowances[tokenOwner][spender] = _allowance;
         
         emit Approval(tokenOwner, spender, amount);
+        return true; 
+        }
         
-        return true;
     }
 
     
-}
+} 
