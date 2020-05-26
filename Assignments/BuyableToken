@@ -1,0 +1,65 @@
+pragma solidity ^0.6.0;
+
+import "github.com/OpenZeppelin/openzeppelin-contracts/contracts/utils/Address.sol";
+
+
+import "./SafeMath.sol";
+
+contract BuyableToken{
+    
+    using SafeMath for uint256;
+    using Address for address;
+    
+    
+    address payable public owner = msg.sender;
+    uint public price = 1 ether;
+    uint public decimal = 10 ** 18;
+    uint public equivalentToken = 100;
+    uint public totalPrice = price.div(equivalentToken);
+    event log(string);
+    
+    
+    mapping(address => uint) public balances;
+ 
+   
+
+    function Buy_Token(address _buyer) public payable{
+        require(_buyer != address(0));
+        require(tx.origin == _buyer);
+        uint numberOfToken =  msg.value.mul(decimal).div(totalPrice);
+        require(numberOfToken > 0);
+        balances[_buyer] = balances[_buyer].add(numberOfToken);
+    }
+    
+    function AdjustPrice(uint256 _AdjustedPrice) public payable onlyOwner returns(uint256){
+        return price = _AdjustedPrice;
+    }
+    
+     modifier onlyOwner(){
+        require(msg.sender == owner,"BCC1: Only owner can execute this feature");
+        _;
+    }
+    
+    //fallback method 0.6;
+    receive() external payable{
+        emit log("Receive");
+    }
+    //fallback for anonymous Value and Data Transactions
+    fallback() payable external{
+        Buy_Token(msg.sender);
+    }
+    
+
+    
+}
+
+
+contract CallContract{
+
+    function pay(address payable adr) payable public returns(uint) {
+        
+        (adr).transfer(msg.value);
+        return adr.balance;
+    }
+    
+}
