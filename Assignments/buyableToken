@@ -12,21 +12,18 @@ contract BuyableToken{
     
     
     address payable public owner = msg.sender;
-    uint public price = 1 ether;
-    uint public decimal = 10 ** 18;
-    uint public equivalentToken = 100;
-    uint public totalPrice = price.div(equivalentToken);
+    uint public price = 1 * 10 ** 18;
+    uint public equivalentTokenPerEther = 100;
+    uint public totalPrice = price.div(equivalentTokenPerEther);
     event log(string);
     
     
     mapping(address => uint) public balances;
  
-   
-
     function Buy_Token(address _buyer) public payable{
         require(_buyer != address(0));
         require(tx.origin == _buyer);
-        uint numberOfToken =  msg.value.mul(decimal).div(totalPrice);
+        uint numberOfToken =  msg.value.div(totalPrice);
         require(numberOfToken > 0);
         balances[_buyer] = balances[_buyer].add(numberOfToken);
     }
@@ -48,9 +45,7 @@ contract BuyableToken{
     fallback() payable external{
         Buy_Token(msg.sender);
     }
-    
-
-    
+   
 }
 
 
