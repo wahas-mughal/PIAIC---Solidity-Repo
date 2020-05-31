@@ -39,6 +39,7 @@ contract BuyableToken{
     
     //fallback method 0.6;
     receive() external payable{
+        Buy_Token(msg.sender);
         emit log("Receive");
     }
     //fallback for anonymous Value and Data Transactions
