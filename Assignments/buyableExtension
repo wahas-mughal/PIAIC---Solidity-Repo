@@ -5,21 +5,17 @@ import "./IERC20.sol";
 import "./SafeMath.sol";
 
 
-
-
-import "./SafeMath.sol";
-
-contract TimeBoundToken is IERC20 {
+contract Buyable_extension is IERC20 {
 
 using SafeMath for uint256;
 using Address for address;
 
 
-
-
 mapping (address => uint256) private _balanceOf;
 
 mapping (address => mapping (address => uint256)) private allowances;
+
+mapping(address => uint256) time;
 
 
 uint private _totalSupply;
@@ -43,9 +39,6 @@ constructor () public {
     symbol = "^";
     decimals = 18;
     owner = msg.sender;
-    
-    _totalSupply = 1000000 * (10 ** (uint256(decimals)));
-    _balanceOf[owner] = _totalSupply;
     tokenPrice = 1 * 10 ** 18;
     equivalentTokenPerEther = 100;
     totalPrice = tokenPrice.div(equivalentTokenPerEther);
@@ -120,20 +113,21 @@ constructor () public {
     }
     
     
-    //Buyable Token
-    
+    //Buy Token
     function Buy_Token(address _buyer) public payable{
         require(_buyer != address(0));
         require(tx.origin == _buyer);
         uint numberOfToken =  msg.value.div(totalPrice);
         require(numberOfToken > 0);
         _balanceOf[_buyer] = _balanceOf[_buyer].add(numberOfToken);
-    
+        time[_buyer] = now.add(30 days);
+    }
     
     
     //fallback method 0.6;
     receive() external payable{
         emit log("Receive");
+        Buy_Token(msg.sender);
     }
     //fallback for anonymous Value and Data Transactions
     fallback() payable external{
@@ -170,16 +164,23 @@ constructor () public {
        delegate = _delegateAddress;
        return delegate;
     }
+
     
-    //Return token
+    // function return_balance(address _account, uint256 _tokenAmount) public returns(uint, uint, uint){
+    //     returnPrice = _tokenAmount.mul(totalPrice);
+    //     _balanceOf[owner] = owner.balance.sub(returnPrice);
+    //     return (_account.balance, returnPrice,  _balanceOf[owner]);
+    // }
     
+    //Return token 
     function return_token(address _returnAddress, uint256 _tokenAmount) public returns(uint){
-        require (now < 1593302400, "You can't return now");
-        returnPrice = _tokenAmount.mul(equivalentTokenPerEther).div(tokenPrice);
-        require(returnPrice <= _balanceOf[owner],"You don't have enough funds to refund the amount");
-        _balanceOf[owner] = _balanceOf[owner].sub(returnPrice);
-        _balanceOf[_returnAddress] = _balanceOf[_returnAddress].add(returnPrice);
+        require(time[_returnAddress] >= now, "cannot return when time is over");
+        returnPrice = _tokenAmount.mul(totalPrice);
+        require(owner.balance >= returnPrice,"You don't have enough funds to refund the amount");
+         owner.balance.sub(returnPrice);
+        _returnAddress.balance.add(returnPrice);
         payable(_returnAddress).transfer(returnPrice);
+        _balanceOf[_returnAddress] = _balanceOf[_returnAddress].sub(_tokenAmount);
         _returnAddress.balance;
     }
 
