@@ -457,21 +457,4 @@ contract ERC721 is ERC165, IERC721{
         return(true);
     }
     
-    
-    // list the property for sale
-    function listProperty(uint256 tokenId) public{
-        
-    }
-    
-    
-    // Send buy request to the owner
-    function propertyBuyRequest(uint256 listingNumber) public{
-        
-    }
-    
-    function buyProperty() public{
-        
-    }
-    
-    
 }
