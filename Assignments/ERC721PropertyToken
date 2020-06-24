@@ -1,0 +1,74 @@
+pragma solidity ^0.6.0;
+
+
+import "./ERC721Token.sol";
+
+contract _ERC721 is ERC721{
+    
+    constructor() ERC721("GameItem", "ITM") public { }
+    
+
+    uint public listingNumber = 0;
+    mapping(uint256 => string) private _askingValues;
+     mapping(uint256 => string) private _offerValues;
+    
+    /** starting point **/
+    uint256 public tokenIdCounter;
+    function registerProperty(address _owner, string memory _tokenURI, string memory _askingValue) public returns (bool) {
+        tokenIdCounter = tokenIdCounter.add(1);
+        _askingValues[tokenIdCounter] = _askingValue;
+        _mint(_owner,tokenIdCounter);
+        _setTokenURI(tokenIdCounter, _tokenURI);
+        return(true);
+    }
+    
+    
+    // list the property for sale
+    function listProperty(uint256 _tokenId) public returns(bool){
+        require(_exists(_tokenId), "Token ID don't exist");
+        uint tokenID = _tokenId;
+        listingNumber++;
+        listedProperties[tokenID] = listingNumber;
+        return true;
+    }
+    
+    // show listed properties
+    function showListedProperties(uint _tokenID) public view returns(uint, string memory, string memory) {
+        uint listedNumber = listedProperties[_tokenID];
+        string memory URI = _tokenURIs[_tokenID];
+        string memory askedValue = _askingValues[_tokenID];
+        return (listedNumber, URI, askedValue);
+    }
+    
+    // Send buy request to the owner
+    function propertyBuyRequest(uint256 _tokenID, string memory _offerValue) public returns(string memory){
+        require(_tokenID <= 0);
+        require(_exists(_tokenID), "Token ID don't exist");
+        _offerValues[_tokenID] = _offerValue;
+        return "Offer sent!";
+        
+    }
+    
+    function accept(_tokenID) public{
+        
+    }
+    
+    function decline() public{
+        
+    }
+    
+    // Buy the property
+     function buyProperty(address _buyerAddress, uint _tokenID, uint256 _tokenAmount) public returns(bool){
+     
+        require(_buyerAddress.balance >= _tokenAmount, "You don't have enough funds to buy the property");
+        address tokenOwner = _tokenOwners[_tokenID];
+        _buyerAddress.balance.sub(_tokenAmount);
+        tokenOwner.balance.add(_tokenAmount);
+        payable(_buyerAddress).transfer(_tokenAmount);
+        return true;
+    }
+    
+}
+    
+    
+   
