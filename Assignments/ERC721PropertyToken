@@ -82,17 +82,15 @@ contract _ERC721 is ERC721{
     }
     
     // Buy the property
-     function buyProperty(address _buyerAddress, uint _tokenID, uint256 _tokenAmount) public returns(bool){
+     function buyProperty(address _buyerAddress, uint _tokenID) payable public returns(bool){
      
-        require(_buyerAddress.balance >= _tokenAmount, "You don't have enough funds to buy the property");
+        require(_buyerAddress.balance >= msg.value, "You don't have enough funds to buy the property");
         address tokenOwner = _tokenOwners[_tokenID];
-        _buyerAddress.balance.sub(_tokenAmount);
-        tokenOwner.balance.add(_tokenAmount);
-        payable(_buyerAddress).transfer(_tokenAmount);
-        
-        
-        //transfer the token
-        require(_isApprovedOrOwner(msg.sender, _tokenID), "ERC721: transfer caller is not owner nor approved");
+        _buyerAddress.balance.sub(msg.value);
+        tokenOwner.balance.add(msg.value);
+        payable(_buyerAddress).transfer(msg.value);
+    
+    // transfer token ownership   
         address from = tokenOwner;
         address to = _buyerAddress;
         _transfer(from, to, _tokenID);
