@@ -11,9 +11,11 @@ contract _ERC721 is ERC721{
     uint public listingNumber = 0;
     mapping(uint256 => string) private _askingValues;
      mapping(uint256 => string) private _offerValues;
+     mapping(uint256 => address) private _acceptedOffers;
+     mapping(uint256 => address) private _declinedoffers;
     
     /** starting point **/
-    uint256 public tokenIdCounter;
+
     function registerProperty(address _owner, string memory _tokenURI, string memory _askingValue) public returns (bool) {
         tokenIdCounter = tokenIdCounter.add(1);
         _askingValues[tokenIdCounter] = _askingValue;
@@ -49,12 +51,16 @@ contract _ERC721 is ERC721{
         
     }
     
-    function accept(_tokenID) public{
-        
+    //accept the offer
+    function accept(address _requestAddress ,uint256 _tokenID) public returns(bool){
+        _acceptedOffers[_tokenID] = _requestAddress;
+        return true;
     }
     
-    function decline() public{
-        
+    //decline the offer
+    function decline(address _requestAddress ,uint256 _tokenID) public returns(bool){
+        _declinedoffers[_tokenID] = _requestAddress;
+        return true;
     }
     
     // Buy the property
@@ -69,6 +75,3 @@ contract _ERC721 is ERC721{
     }
     
 }
-    
-    
-   
