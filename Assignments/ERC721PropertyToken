@@ -9,10 +9,11 @@ contract _ERC721 is ERC721{
     
 
     uint public listingNumber = 0;
+    uint256 public tokenIdCounter;
     mapping(uint256 => string) private _askingValues;
      mapping(uint256 => string) private _offerValues;
-     mapping(uint256 => address) private _acceptedOffers;
-     mapping(uint256 => address) private _declinedoffers;
+     mapping(uint256 => string) private _acceptedOffers;
+     mapping(uint256 => string) private _declinedOffers;
     
     /** starting point **/
 
@@ -44,22 +45,39 @@ contract _ERC721 is ERC721{
     
     // Send buy request to the owner
     function propertyBuyRequest(uint256 _tokenID, string memory _offerValue) public returns(string memory){
-        require(_tokenID <= 0);
+        require(_tokenID >= 0);
         require(_exists(_tokenID), "Token ID don't exist");
         _offerValues[_tokenID] = _offerValue;
         return "Offer sent!";
         
     }
     
+    
+    // show the accepted offer
+    function acceptedOffers(uint256 _tokenID) public view returns(string memory){
+        require(_exists(_tokenID), "Token ID don't exist");   
+        string memory acceptedOffer =  _acceptedOffers[_tokenID];
+        return acceptedOffer;
+
+    }
+    
+       // show the declined offer
+    function declineOffers(uint256 _tokenID) public view returns(string memory){
+        require(_exists(_tokenID), "Token ID don't exist");   
+       string memory _declinedoffers =  _declinedOffers[_tokenID];
+        return _declinedoffers;
+    }
+    
+    
     //accept the offer
-    function accept(address _requestAddress ,uint256 _tokenID) public returns(bool){
-        _acceptedOffers[_tokenID] = _requestAddress;
+    function accept(string memory _acceptedOffer ,uint256 _tokenID) public returns(bool){
+        _acceptedOffers[_tokenID] = _acceptedOffer;
         return true;
     }
     
     //decline the offer
-    function decline(address _requestAddress ,uint256 _tokenID) public returns(bool){
-        _declinedoffers[_tokenID] = _requestAddress;
+    function decline(string memory _offersDeclined ,uint256 _tokenID) public returns(bool){
+        _declinedOffers[_tokenID] = _offersDeclined;
         return true;
     }
     
@@ -71,6 +89,13 @@ contract _ERC721 is ERC721{
         _buyerAddress.balance.sub(_tokenAmount);
         tokenOwner.balance.add(_tokenAmount);
         payable(_buyerAddress).transfer(_tokenAmount);
+        
+        
+        //transfer the token
+        require(_isApprovedOrOwner(msg.sender, _tokenID), "ERC721: transfer caller is not owner nor approved");
+        address from = tokenOwner;
+        address to = _buyerAddress;
+        _transfer(from, to, _tokenID);
         return true;
     }
     
