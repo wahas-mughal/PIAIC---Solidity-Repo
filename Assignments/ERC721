@@ -14,11 +14,7 @@ contract ERC721 is ERC165, IERC721{
 
     uint _totalSupply;
     
-    string public plotno;
-    string public area;
-    string public demand;
-    string public propertyURI;
-    address public propertyOwner; 
+ 
    
     // Mapping from owner address to their set of owned tokens
     mapping (address => uint256[]) private _ownerTokens;
@@ -29,11 +25,11 @@ contract ERC721 is ERC165, IERC721{
     
 
     // token mapping from token ids to their owners
-    mapping(uint256 => address) private _tokenOwners;
+    mapping(uint256 => address) internal _tokenOwners;
     
     //Mapping for listing a registerProperty
     
-    mapping(address => uint256) private listedProperties;
+    mapping(uint256 => uint256) internal listedProperties;
     
 
     // Mapping from token ID to approved address
@@ -57,7 +53,7 @@ contract ERC721 is ERC165, IERC721{
     string private _symbol;
 
     // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 => string) internal _tokenURIs;
 
     // Base URI
     string private _baseURI;
@@ -441,20 +437,5 @@ contract ERC721 is ERC165, IERC721{
     }
     
     
-    /** starting point **/
-    uint256 public tokenIdCounter;
-    function registerProperty(address _owner, string memory _plotno, string memory _area, string memory _tokenURI, string memory askingValue) public returns (bool) {
-        
-        plotno = _plotno;
-        area = _area;
-        demand = askingValue;
-        propertyURI = _tokenURI;
-        propertyOwner = _owner;
-        
-        tokenIdCounter = tokenIdCounter.add(1);
-        _mint(_owner,tokenIdCounter);
-        _setTokenURI(tokenIdCounter, _tokenURI);
-        return(true);
-    }
     
 }
