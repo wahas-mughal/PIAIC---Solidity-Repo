@@ -1,2 +1,2 @@
-# PIAIC - Solidity
+# Solidity
 Solidity Smart Contracts
